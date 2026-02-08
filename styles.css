@@ -57,12 +57,7 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background-color: #000000;
-    /* background-image: url('images/backgrounds/textured-black-bg.jpg'); - Removed: file doesn't exist */
-    /* background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed; */
+    background-color: #0a0a0a;
     color: var(--text-color);
     overflow-x: hidden;
     line-height: 1.4;
@@ -73,7 +68,7 @@ body {
     text-rendering: optimizeLegibility;
 }
 
-/* Film grain texture overlay - creates textured black background effect */
+/* Textured black background with dust particles and fine grain */
 body::before {
     content: '';
     position: fixed;
@@ -82,54 +77,81 @@ body::before {
     width: 100%;
     height: 100%;
     background: 
-        /* Film grain noise texture */
+        /* Fine-grained noise texture */
         repeating-linear-gradient(
             0deg,
-            rgba(255, 255, 255, 0.03) 0px,
+            rgba(255, 255, 255, 0.015) 0px,
+            transparent 0.5px,
             transparent 1px,
-            transparent 2px,
-            rgba(255, 255, 255, 0.02) 3px
+            rgba(255, 255, 255, 0.01) 1.5px,
+            transparent 2px
         ),
         repeating-linear-gradient(
             90deg,
-            rgba(255, 255, 255, 0.03) 0px,
+            rgba(255, 255, 255, 0.015) 0px,
+            transparent 0.5px,
             transparent 1px,
-            transparent 2px,
-            rgba(255, 255, 255, 0.02) 3px
+            rgba(255, 255, 255, 0.01) 1.5px,
+            transparent 2px
         ),
-        /* Dust particles and specks */
-        radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.08) 0.5px, transparent 0.5px),
-        radial-gradient(circle at 60% 70%, rgba(255, 255, 255, 0.06) 0.4px, transparent 0.4px),
-        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.07) 0.6px, transparent 0.6px),
-        radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.05) 0.3px, transparent 0.3px),
-        radial-gradient(circle at 90% 60%, rgba(255, 255, 255, 0.06) 0.5px, transparent 0.5px),
-        /* Base texture */
+        repeating-linear-gradient(
+            45deg,
+            rgba(255, 255, 255, 0.008) 0px,
+            transparent 1px,
+            transparent 2px
+        ),
+        /* Dust particles and specks - more numerous */
+        radial-gradient(circle at 15% 25%, rgba(255, 255, 255, 0.12) 0.4px, transparent 0.4px),
+        radial-gradient(circle at 35% 45%, rgba(255, 255, 255, 0.1) 0.3px, transparent 0.3px),
+        radial-gradient(circle at 55% 15%, rgba(255, 255, 255, 0.11) 0.5px, transparent 0.5px),
+        radial-gradient(circle at 75% 65%, rgba(255, 255, 255, 0.09) 0.4px, transparent 0.4px),
+        radial-gradient(circle at 25% 75%, rgba(255, 255, 255, 0.1) 0.3px, transparent 0.3px),
+        radial-gradient(circle at 85% 35%, rgba(255, 255, 255, 0.11) 0.4px, transparent 0.4px),
+        radial-gradient(circle at 45% 85%, rgba(255, 255, 255, 0.08) 0.5px, transparent 0.5px),
+        radial-gradient(circle at 65% 25%, rgba(255, 255, 255, 0.1) 0.3px, transparent 0.3px),
+        radial-gradient(circle at 95% 55%, rgba(255, 255, 255, 0.09) 0.4px, transparent 0.4px),
+        radial-gradient(circle at 5% 65%, rgba(255, 255, 255, 0.1) 0.3px, transparent 0.3px),
+        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.08) 0.4px, transparent 0.4px),
+        radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.09) 0.3px, transparent 0.3px),
+        /* Base black */
         #000000;
     background-size: 
         100% 100%,
         100% 100%,
+        100% 100%,
+        150px 150px,
+        180px 180px,
         200px 200px,
-        300px 300px,
-        250px 250px,
-        400px 400px,
-        350px 350px,
+        220px 220px,
+        160px 160px,
+        190px 190px,
+        210px 210px,
+        170px 170px,
+        240px 240px,
+        230px 230px,
         100% 100%;
     background-position: 
         0 0,
         0 0,
         0 0,
-        50px 100px,
-        150px 200px,
-        200px 50px,
-        300px 300px,
+        20px 30px,
+        80px 120px,
+        150px 50px,
+        220px 180px,
+        100px 200px,
+        280px 90px,
+        50px 250px,
+        300px 150px,
+        180px 280px,
+        250px 220px,
         0 0;
     pointer-events: none;
     z-index: 0;
-    opacity: 0.4;
+    opacity: 0.6;
     mix-blend-mode: overlay;
 }
 
-/* Additional texture layer for scratches and fibers */
+/* Additional texture layer for scratches, lines, and imperfections */
 body::after {
     content: '';
     position: fixed;
@@ -138,42 +160,89 @@ body::after {
     width: 100%;
     height: 100%;
     background: 
-        /* Subtle scratches and streaks */
+        /* Horizontal scratches and streaks */
         linear-gradient(
             90deg,
             transparent 0%,
-            rgba(255, 255, 255, 0.02) 45%,
-            transparent 50%,
-            rgba(255, 255, 255, 0.015) 55%,
-            transparent 100%
-        ),
-        /* Fiber-like lines */
-        linear-gradient(
-            15deg,
-            transparent 0%,
             rgba(255, 255, 255, 0.03) 48%,
-            transparent 52%,
+            transparent 50%,
+            rgba(255, 255, 255, 0.025) 52%,
             transparent 100%
         ),
         linear-gradient(
-            165deg,
+            90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.02) 35%,
+            transparent 40%,
+            rgba(255, 255, 255, 0.018) 45%,
+            transparent 100%
+        ),
+        /* Diagonal scratches - straight and curved */
+        linear-gradient(
+            25deg,
             transparent 0%,
             rgba(255, 255, 255, 0.025) 49%,
             transparent 51%,
             transparent 100%
+        ),
+        linear-gradient(
+            155deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.022) 48%,
+            transparent 52%,
+            transparent 100%
+        ),
+        linear-gradient(
+            10deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.02) 47%,
+            transparent 53%,
+            transparent 100%
+        ),
+        linear-gradient(
+            170deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.023) 49.5%,
+            transparent 50.5%,
+            transparent 100%
+        ),
+        /* Vertical fine lines */
+        linear-gradient(
+            0deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.015) 49%,
+            transparent 51%,
+            transparent 100%
+        ),
+        linear-gradient(
+            0deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.012) 48%,
+            transparent 52%,
+            transparent 100%
         );
     background-size: 
-        100% 2px,
-        200px 1px,
-        150px 1px;
+        100% 1.5px,
+        100% 1px,
+        300px 0.8px,
+        250px 0.8px,
+        280px 0.7px,
+        320px 0.9px,
+        150px 0.6px,
+        180px 0.5px;
     background-position: 
-        0 30%,
-        20% 10%,
-        80% 90%;
+        0 25%,
+        0 60%,
+        15% 40%,
+        70% 20%,
+        40% 80%,
+        85% 65%,
+        30% 10%,
+        60% 90%;
     background-repeat: no-repeat;
     pointer-events: none;
     z-index: 0;
-    opacity: 0.3;
+    opacity: 0.5;
     mix-blend-mode: screen;
 }
 
