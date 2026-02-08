@@ -1,4 +1,6 @@
-/* Gabriel Sans Font - Add @font-face if you have local font files */
+/* Gabriel Sans Font - Using system fonts as fallback since font files don't exist */
+/* If you have the font files, uncomment and add them to a 'fonts' folder */
+/*
 @font-face {
     font-family: 'Gabriel Sans';
     src: url('fonts/GabrielSans-Regular.woff2') format('woff2'),
@@ -38,6 +40,7 @@
     font-style: normal;
     font-display: swap;
 }
+*/
 
 * {
     margin: 0;
@@ -55,11 +58,11 @@
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     background-color: #000000;
-    background-image: url('images/backgrounds/textured-black-bg.jpg');
-    background-size: cover;
+    /* background-image: url('images/backgrounds/textured-black-bg.jpg'); - Removed: file doesn't exist */
+    /* background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-attachment: fixed;
+    background-attachment: fixed; */
     color: var(--text-color);
     overflow-x: hidden;
     line-height: 1.4;
@@ -235,7 +238,7 @@ body::after {
 }
 
 .title-main {
-    font-family: 'Gabriel Sans', sans-serif;
+    font-family: 'Gabriel Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     font-size: 2.5rem;
     font-weight: 600;
     letter-spacing: -0.5px;
@@ -243,7 +246,7 @@ body::after {
 }
 
 .title-sub {
-    font-family: 'Gabriel Sans', sans-serif;
+    font-family: 'Gabriel Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     font-size: 1.2rem;
     font-weight: 400;
     letter-spacing: 2px;
@@ -313,7 +316,7 @@ body::after {
 }
 
 .section-title {
-    font-family: 'Gabriel Sans', sans-serif;
+    font-family: 'Gabriel Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     font-size: 3rem;
     font-weight: 600;
     letter-spacing: -1px;
@@ -340,7 +343,7 @@ body::after {
 }
 
 .section-divider .section-title {
-    font-family: 'Gabriel Sans', sans-serif;
+    font-family: 'Gabriel Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     font-size: 2.5rem;
     margin: 0;
     white-space: nowrap;
