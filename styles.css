@@ -670,11 +670,13 @@ body::after {
     .video-grid {
         flex-wrap: wrap;
         max-width: 100%;
+        gap: 12px;
     }
     
     .video-column {
-        width: calc(50% - (var(--gutter) / 2));
-        min-width: 200px;
+        width: calc(50% - 6px);
+        min-width: 0;
+        flex: 0 0 calc(50% - 6px);
     }
     
     .title-main {
@@ -706,8 +708,14 @@ body::after {
         padding: 7rem 1rem 1.5rem;
     }
     
+    .video-grid {
+        gap: 10px;
+    }
+    
     .video-column {
-        width: 100%;
+        width: calc(50% - 5px);
+        flex: 0 0 calc(50% - 5px);
+        min-width: 0;
     }
     
     .title-main {
