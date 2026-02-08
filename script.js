@@ -29,10 +29,10 @@ class MediaManager {
     }
 
     setupIntersectionObserver() {
-        // More aggressive optimization - only load when closer to viewport
+        // More aggressive optimization - start loading when close to viewport
         const observerOptions = {
             root: null,
-            rootMargin: '100px', // Start loading 100px before entering viewport
+            rootMargin: '200px', // Start loading 200px before entering viewport
             threshold: 0.01 // Trigger earlier
         };
 
@@ -44,18 +44,18 @@ class MediaManager {
                 if (entry.isIntersecting) {
                     // Check if it's a video or image
                     if (element.tagName === 'VIDEO') {
-                        // Set preload to auto when visible
-                        if (element.preload === 'none') {
-                            element.preload = 'auto';
-                        }
+                        // Ensure autoplay and preload are set
+                        element.setAttribute('autoplay', '');
+                        element.setAttribute('preload', 'auto');
+                        element.autoplay = true;
+                        element.preload = 'auto';
+                        // Force play the video
                         this.playVideo(element, videoItem);
                     } else if (element.tagName === 'IMG') {
                         this.loadImage(element, videoItem);
                     }
-                    // Unobserve after loading to improve performance
-                    observer.unobserve(element);
                 } else {
-                    // Pause video if it's a video element
+                    // Pause video if it's a video element when out of view
                     if (element.tagName === 'VIDEO') {
                         this.pauseVideo(element);
                     }
@@ -112,15 +112,29 @@ class MediaManager {
         this.videos.forEach((video, index) => {
             const videoItem = video.closest('.video-item');
 
-            // Force loop attribute and property
+            // Force autoplay, loop, and muted attributes
+            video.autoplay = true;
             video.loop = true;
+            video.muted = true;
+            video.setAttribute('autoplay', '');
             video.setAttribute('loop', 'true');
+            video.setAttribute('muted', '');
+            video.setAttribute('playsinline', '');
 
             // Remove loading state when video can play
             video.addEventListener('loadeddata', () => {
                 videoItem.classList.remove('loading');
-                // Ensure loop is still set after loading
+                // Ensure autoplay and loop are still set after loading
+                video.autoplay = true;
                 video.loop = true;
+                video.muted = true;
+                // Try to play immediately
+                video.play().catch(() => {});
+            });
+
+            // Try to play when video metadata is loaded
+            video.addEventListener('loadedmetadata', () => {
+                video.play().catch(() => {});
             });
 
             // Add loading state initially
@@ -147,32 +161,60 @@ class MediaManager {
                 console.warn(`Video ${index + 1} failed to load`);
             });
 
-            // Ensure loop persists
+            // Ensure autoplay and loop persist
             video.addEventListener('play', () => {
                 if (!video.loop) {
                     video.loop = true;
                 }
+                if (!video.autoplay) {
+                    video.autoplay = true;
+                }
             });
+
+            // Try to play immediately if video is already loaded
+            if (video.readyState >= 2) {
+                video.play().catch(() => {});
+            }
         });
     }
 
     async playVideo(video, videoItem) {
         try {
             videoItem.classList.add('loading');
-            // Ensure loop is set
+            // Ensure autoplay, loop, and muted are set
+            video.autoplay = true;
             video.loop = true;
+            video.muted = true;
+            video.setAttribute('autoplay', '');
+            video.setAttribute('loop', 'true');
+            video.setAttribute('muted', '');
+            
+            // Load the video if not already loading
+            if (video.readyState === 0) {
+                video.load();
+            }
+            
+            // Try to play
             await video.play();
             videoItem.classList.remove('loading');
             
-            // Double-check loop is working
+            // Double-check settings
             if (!video.loop) {
                 video.loop = true;
+            }
+            if (!video.autoplay) {
+                video.autoplay = true;
             }
         } catch (error) {
             console.warn('Autoplay prevented:', error);
             videoItem.classList.remove('loading');
-            // Try to play on user interaction
-            this.setupClickToPlay(video, videoItem);
+            // Retry playing after a short delay
+            setTimeout(() => {
+                video.play().catch(() => {
+                    // If still fails, set up click to play as fallback
+                    this.setupClickToPlay(video, videoItem);
+                });
+            }, 100);
         }
     }
 
