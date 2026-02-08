@@ -450,9 +450,14 @@ body::after {
     cursor: pointer;
     background: #1a1a1a;
     transition: transform 0.3s ease, opacity 0.3s ease;
-    /* Performance optimizations */
+    /* Performance optimizations for smooth video playback */
     contain: layout style paint;
     will-change: transform;
+    /* GPU acceleration */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    /* Isolate rendering context */
+    isolation: isolate;
 }
 
 .video-item:hover {
@@ -476,11 +481,21 @@ body::after {
     height: 100%;
     object-fit: cover;
     display: block;
-    /* Performance optimizations */
+    /* Performance optimizations for smooth playback */
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
     backface-visibility: hidden;
     transform: translateZ(0);
+    will-change: transform;
+    /* GPU acceleration */
+    -webkit-transform: translateZ(0);
+    -moz-transform: translateZ(0);
+    -ms-transform: translateZ(0);
+    -o-transform: translateZ(0);
+    /* Smooth video rendering */
+    -webkit-backface-visibility: hidden;
+    -moz-backface-visibility: hidden;
+    -ms-backface-visibility: hidden;
 }
 
 /* Image support */
