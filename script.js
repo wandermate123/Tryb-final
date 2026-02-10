@@ -122,6 +122,8 @@ class MediaManager {
             video.loop = true;
             video.muted = true;
             video.playsInline = true;
+            video.controls = false;
+            video.removeAttribute('controls');
             video.setAttribute('autoplay', '');
             video.setAttribute('loop', 'true');
             video.setAttribute('muted', '');
@@ -212,6 +214,8 @@ class MediaManager {
             video.loop = true;
             video.muted = true;
             video.playsInline = true;
+            video.controls = false;
+            video.removeAttribute('controls');
             video.setAttribute('autoplay', '');
             video.setAttribute('loop', 'true');
             video.setAttribute('muted', '');

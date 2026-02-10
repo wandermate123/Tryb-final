@@ -435,6 +435,18 @@ body::after {
     width: var(--column-width);
 }
 
+/* Web design: horizontal desktop layout, show full frame (no crop) */
+#web-design.web-design-grid .video-item {
+    aspect-ratio: 16 / 9;
+    height: auto !important;
+    min-height: 200px;
+}
+
+#web-design .video-player {
+    object-fit: contain;
+    background: #0d0d0d;
+}
+
 
 .video-column {
     display: flex;
@@ -475,6 +487,21 @@ body::after {
     aspect-ratio: 1 / 1;
 }
 
+/* Video placeholder (slot for future upload) */
+.video-item.video-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px dashed rgba(255, 255, 255, 0.25);
+}
+
+.video-placeholder-text {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
 .video-player,
 .media-image {
     width: 100%;
@@ -496,6 +523,27 @@ body::after {
     -webkit-backface-visibility: hidden;
     -moz-backface-visibility: hidden;
     -ms-backface-visibility: hidden;
+}
+
+/* Hide iOS Safari default play button overlay – videos autoplay/loop without controls */
+.video-player {
+    -webkit-appearance: none;
+    appearance: none;
+}
+.video-player::-webkit-media-controls,
+.video-player::-webkit-media-controls-enclosure,
+.video-player::-webkit-media-controls-panel,
+.video-player::-webkit-media-controls-start-playback-button {
+    display: none !important;
+    -webkit-appearance: none;
+    opacity: 0;
+    pointer-events: none;
+}
+.video-player::-webkit-media-controls-overlay-play-button {
+    display: none !important;
+    -webkit-appearance: none;
+    opacity: 0;
+    pointer-events: none;
 }
 
 /* Image support */
