@@ -46,7 +46,7 @@ class MediaManager {
                                 else this.playVideo(element, videoItem);
                             }
                         } else if (element.tagName === 'IMG') {
-                            this.loadImage(element, videoItem);
+                            this.loadImage(element);
                         }
                     } else if (!entry.isIntersecting && element.tagName === 'VIDEO') {
                         this.pauseVideo(element);
@@ -74,39 +74,13 @@ class MediaManager {
         }
     }
 
-    loadImage(img, videoItem) {
-        // Remove loading state for images
-        if (img.complete) {
-            videoItem.classList.remove('loading');
-        } else {
-            img.addEventListener('load', () => {
-                videoItem.classList.remove('loading');
-            });
-            img.addEventListener('error', () => {
-                videoItem.classList.remove('loading');
-            });
-        }
+    loadImage(img) {
+        if (!img.complete) img.decode?.().catch(() => {});
     }
 
     setupImageLoading() {
-        this.images.forEach((img, index) => {
-            const videoItem = img.closest('.video-item');
-            
-            // Add loading state initially
-            videoItem.classList.add('loading');
-
-            // Remove loading when image loads
-            if (img.complete) {
-                videoItem.classList.remove('loading');
-            } else {
-                img.addEventListener('load', () => {
-                    videoItem.classList.remove('loading');
-                });
-                img.addEventListener('error', () => {
-                    videoItem.classList.remove('loading');
-                    console.warn(`Image ${index + 1} failed to load`);
-                });
-            }
+        this.images.forEach(img => {
+            if (!img.complete) img.decode?.().catch(() => {});
         });
     }
 
@@ -130,30 +104,14 @@ class MediaManager {
             video.setAttribute('playsinline', '');
 
             video.style.transform = 'translateZ(0)';
-            if (!mobile) video.style.willChange = 'transform';
-
             video.preload = mobile ? 'metadata' : 'auto';
             video.setAttribute('preload', mobile ? 'metadata' : 'auto');
 
-            // Remove loading state when video can play
-            video.addEventListener('loadeddata', () => {
-                videoItem.classList.remove('loading');
-                video.autoplay = true;
-                video.loop = true;
-                video.muted = true;
-            }, { once: true });
-
-            // Try to play when video can start playing
             video.addEventListener('canplay', () => {
-                if (!this.playingVideos.has(video)) {
-                    video.play().catch(() => {});
-                }
+                if (!this.playingVideos.has(video)) video.play().catch(() => {});
             }, { once: true });
 
-            // Add loading state initially
-            videoItem.classList.add('loading');
-
-            // Optimized loop handling - use seeked event for smoother loops
+            // Smooth loop handling
             video.addEventListener('ended', () => {
                 requestAnimationFrame(() => {
                     video.currentTime = 0;
@@ -176,11 +134,7 @@ class MediaManager {
                 }
             });
 
-            // Handle video errors gracefully
-            video.addEventListener('error', () => {
-                videoItem.classList.remove('loading');
-                console.warn(`Video ${index + 1} failed to load`);
-            }, { once: true });
+            video.addEventListener('error', () => {}, { once: true });
 
             // Track playing videos
             video.addEventListener('play', () => {
@@ -207,62 +161,26 @@ class MediaManager {
         }
 
         try {
-            videoItem.classList.add('loading');
-            
-            // Ensure all attributes are set for smooth playback
-            video.autoplay = true;
-            video.loop = true;
-            video.muted = true;
-            video.playsInline = true;
-            video.controls = false;
-            video.removeAttribute('controls');
-            video.setAttribute('autoplay', '');
-            video.setAttribute('loop', 'true');
-            video.setAttribute('muted', '');
-            video.setAttribute('playsinline', '');
-            
-            // Load video if needed
             if (video.readyState === 0) {
                 video.preload = 'auto';
                 video.load();
             }
-            
-            // Wait for video to be ready
             if (video.readyState < 3) {
-                await new Promise((resolve) => {
-                    const onCanPlay = () => {
-                        video.removeEventListener('canplay', onCanPlay);
-                        resolve();
-                    };
-                    video.addEventListener('canplay', onCanPlay);
+                await new Promise(r => {
+                    const fn = () => { video.removeEventListener('canplay', fn); r(); };
+                    video.addEventListener('canplay', fn);
                 });
             }
-            
-            // Play using requestAnimationFrame for smooth start
-            await new Promise((resolve) => {
-                requestAnimationFrame(async () => {
-                    try {
-                        await video.play();
-                        resolve();
-                    } catch (e) {
-                        resolve(); // Continue even if play fails
-                    }
+            await new Promise(r => {
+                requestAnimationFrame(() => {
+                    video.play().then(() => r()).catch(() => r());
                 });
             });
-            
-            videoItem.classList.remove('loading');
             this.playingVideos.add(video);
-            
-        } catch (error) {
-            videoItem.classList.remove('loading');
-            // Retry with delay using requestAnimationFrame
-            requestAnimationFrame(() => {
-                setTimeout(() => {
-                    video.play().catch(() => {
-                        this.setupClickToPlay(video, videoItem);
-                    });
-                }, 200);
-            });
+        } catch {
+            requestAnimationFrame(() => setTimeout(() => {
+                video.play().catch(() => this.setupClickToPlay(video, videoItem));
+            }, 150));
         }
     }
 
@@ -352,23 +270,14 @@ class HeaderScroll {
     }
 
     updateHeader() {
-        const currentScroll = window.pageYOffset;
-        
-        if (currentScroll > 100) {
-            this.header.style.background = 'linear-gradient(180deg, rgba(10, 10, 10, 0.75) 0%, rgba(10, 10, 10, 0.7) 50%, rgba(10, 10, 10, 0.75) 100%)';
-            this.header.style.backdropFilter = 'blur(30px) saturate(180%)';
-            this.header.style.webkitBackdropFilter = 'blur(30px) saturate(180%)';
-            this.header.style.borderBottomColor = 'rgba(255, 255, 255, 0.12)';
-            this.header.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08)';
-        } else {
-            this.header.style.background = 'linear-gradient(180deg, rgba(10, 10, 10, 0.3) 0%, rgba(10, 10, 10, 0.2) 50%, rgba(10, 10, 10, 0.25) 100%)';
-            this.header.style.backdropFilter = 'blur(20px) saturate(180%)';
-            this.header.style.webkitBackdropFilter = 'blur(20px) saturate(180%)';
-            this.header.style.borderBottomColor = 'rgba(255, 255, 255, 0.08)';
-            this.header.style.boxShadow = '0 4px 30px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05)';
-        }
-
-        this.lastScroll = currentScroll;
+        const y = window.pageYOffset;
+        const scrolled = y > 100;
+        const bg = scrolled ? 'rgba(10,10,10,0.75)' : 'rgba(10,10,10,0.25)';
+        const blur = scrolled ? 'blur(24px)' : 'blur(16px)';
+        this.header.style.background = `linear-gradient(180deg,${bg} 0%,${bg} 100%)`;
+        this.header.style.backdropFilter = blur;
+        this.header.style.webkitBackdropFilter = blur;
+        this.lastScroll = y;
     }
 }
 

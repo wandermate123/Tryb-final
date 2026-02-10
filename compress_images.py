@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Compress images in photography folder for faster loading on mobile and desktop.
-Resizes to max 1200px width and compresses JPEG/PNG for web.
+Ultra-compress images: ~80% size reduction for fast loading.
+Max width 900px, JPEG quality 60, PNG optimized.
 """
 
 import os
@@ -15,8 +15,8 @@ except ImportError:
     from PIL import Image
 
 PHOTO_DIR = Path(__file__).parent / "photography"
-MAX_WIDTH = 1200
-JPEG_QUALITY = 82
+MAX_WIDTH = 900
+JPEG_QUALITY = 60
 PNG_OPTIMIZE = True
 
 
@@ -33,11 +33,10 @@ def compress_image(path: Path) -> None:
                 ratio = MAX_WIDTH / w
                 new_size = (MAX_WIDTH, int(h * ratio))
                 img = img.resize(new_size, Image.Resampling.LANCZOS)
-            out_path = path
             if ext in (".jpg", ".jpeg"):
-                img.save(out_path, "JPEG", quality=JPEG_QUALITY, optimize=True)
+                img.save(path, "JPEG", quality=JPEG_QUALITY, optimize=True, progressive=True)
             else:
-                img.save(out_path, "PNG", optimize=PNG_OPTIMIZE)
+                img.save(path, "PNG", optimize=PNG_OPTIMIZE, compress_level=9)
     except Exception as e:
         print(f"Skip {path.name}: {e}")
 

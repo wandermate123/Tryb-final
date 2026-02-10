@@ -68,182 +68,14 @@ body {
     text-rendering: optimizeLegibility;
 }
 
-/* Textured black background with dust particles and fine grain */
+/* Light texture - optimized for 60fps (simplified from complex gradients) */
 body::before {
     content: '';
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: 
-        /* Fine-grained noise texture */
-        repeating-linear-gradient(
-            0deg,
-            rgba(255, 255, 255, 0.015) 0px,
-            transparent 0.5px,
-            transparent 1px,
-            rgba(255, 255, 255, 0.01) 1.5px,
-            transparent 2px
-        ),
-        repeating-linear-gradient(
-            90deg,
-            rgba(255, 255, 255, 0.015) 0px,
-            transparent 0.5px,
-            transparent 1px,
-            rgba(255, 255, 255, 0.01) 1.5px,
-            transparent 2px
-        ),
-        repeating-linear-gradient(
-            45deg,
-            rgba(255, 255, 255, 0.008) 0px,
-            transparent 1px,
-            transparent 2px
-        ),
-        /* Dust particles and specks - more numerous */
-        radial-gradient(circle at 15% 25%, rgba(255, 255, 255, 0.12) 0.4px, transparent 0.4px),
-        radial-gradient(circle at 35% 45%, rgba(255, 255, 255, 0.1) 0.3px, transparent 0.3px),
-        radial-gradient(circle at 55% 15%, rgba(255, 255, 255, 0.11) 0.5px, transparent 0.5px),
-        radial-gradient(circle at 75% 65%, rgba(255, 255, 255, 0.09) 0.4px, transparent 0.4px),
-        radial-gradient(circle at 25% 75%, rgba(255, 255, 255, 0.1) 0.3px, transparent 0.3px),
-        radial-gradient(circle at 85% 35%, rgba(255, 255, 255, 0.11) 0.4px, transparent 0.4px),
-        radial-gradient(circle at 45% 85%, rgba(255, 255, 255, 0.08) 0.5px, transparent 0.5px),
-        radial-gradient(circle at 65% 25%, rgba(255, 255, 255, 0.1) 0.3px, transparent 0.3px),
-        radial-gradient(circle at 95% 55%, rgba(255, 255, 255, 0.09) 0.4px, transparent 0.4px),
-        radial-gradient(circle at 5% 65%, rgba(255, 255, 255, 0.1) 0.3px, transparent 0.3px),
-        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.08) 0.4px, transparent 0.4px),
-        radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.09) 0.3px, transparent 0.3px),
-        /* Base black */
-        #000000;
-    background-size: 
-        100% 100%,
-        100% 100%,
-        100% 100%,
-        150px 150px,
-        180px 180px,
-        200px 200px,
-        220px 220px,
-        160px 160px,
-        190px 190px,
-        210px 210px,
-        170px 170px,
-        240px 240px,
-        230px 230px,
-        100% 100%;
-    background-position: 
-        0 0,
-        0 0,
-        0 0,
-        20px 30px,
-        80px 120px,
-        150px 50px,
-        220px 180px,
-        100px 200px,
-        280px 90px,
-        50px 250px,
-        300px 150px,
-        180px 280px,
-        250px 220px,
-        0 0;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.03) 0%, transparent 70%), #000;
     pointer-events: none;
     z-index: 0;
-    opacity: 0.6;
-    mix-blend-mode: overlay;
-}
-
-/* Additional texture layer for scratches, lines, and imperfections */
-body::after {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: 
-        /* Horizontal scratches and streaks */
-        linear-gradient(
-            90deg,
-            transparent 0%,
-            rgba(255, 255, 255, 0.03) 48%,
-            transparent 50%,
-            rgba(255, 255, 255, 0.025) 52%,
-            transparent 100%
-        ),
-        linear-gradient(
-            90deg,
-            transparent 0%,
-            rgba(255, 255, 255, 0.02) 35%,
-            transparent 40%,
-            rgba(255, 255, 255, 0.018) 45%,
-            transparent 100%
-        ),
-        /* Diagonal scratches - straight and curved */
-        linear-gradient(
-            25deg,
-            transparent 0%,
-            rgba(255, 255, 255, 0.025) 49%,
-            transparent 51%,
-            transparent 100%
-        ),
-        linear-gradient(
-            155deg,
-            transparent 0%,
-            rgba(255, 255, 255, 0.022) 48%,
-            transparent 52%,
-            transparent 100%
-        ),
-        linear-gradient(
-            10deg,
-            transparent 0%,
-            rgba(255, 255, 255, 0.02) 47%,
-            transparent 53%,
-            transparent 100%
-        ),
-        linear-gradient(
-            170deg,
-            transparent 0%,
-            rgba(255, 255, 255, 0.023) 49.5%,
-            transparent 50.5%,
-            transparent 100%
-        ),
-        /* Vertical fine lines */
-        linear-gradient(
-            0deg,
-            transparent 0%,
-            rgba(255, 255, 255, 0.015) 49%,
-            transparent 51%,
-            transparent 100%
-        ),
-        linear-gradient(
-            0deg,
-            transparent 0%,
-            rgba(255, 255, 255, 0.012) 48%,
-            transparent 52%,
-            transparent 100%
-        );
-    background-size: 
-        100% 1.5px,
-        100% 1px,
-        300px 0.8px,
-        250px 0.8px,
-        280px 0.7px,
-        320px 0.9px,
-        150px 0.6px,
-        180px 0.5px;
-    background-position: 
-        0 25%,
-        0 60%,
-        15% 40%,
-        70% 20%,
-        40% 80%,
-        85% 65%,
-        30% 10%,
-        60% 90%;
-    background-repeat: no-repeat;
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.5;
-    mix-blend-mode: screen;
 }
 
 .container {
@@ -276,10 +108,7 @@ body::after {
         0 4px 30px rgba(0, 0, 0, 0.15),
         inset 0 1px 0 rgba(255, 255, 255, 0.05);
     pointer-events: none;
-    transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-                backdrop-filter 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-                box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-                border-bottom-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background 0.25s ease-out, backdrop-filter 0.25s ease-out;
 }
 
 /* Glossy overlay effect */
@@ -351,7 +180,7 @@ body::after {
 .back-button:hover {
     background: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.3);
-    transform: translateX(-2px);
+    transform: translateX(-2px) translateZ(0);
 }
 
 .back-button:active {
@@ -461,19 +290,13 @@ body::after {
     overflow: hidden;
     cursor: pointer;
     background: #1a1a1a;
-    transition: transform 0.3s ease, opacity 0.3s ease;
-    /* Performance optimizations for smooth video playback */
     contain: layout style paint;
-    will-change: transform;
-    /* GPU acceleration */
     transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-    /* Isolate rendering context */
-    isolation: isolate;
+    transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.2s ease;
 }
 
 .video-item:hover {
-    transform: scale(1.02);
+    transform: scale(1.02) translateZ(0);
     opacity: 0.95;
 }
 
@@ -508,21 +331,8 @@ body::after {
     height: 100%;
     object-fit: cover;
     display: block;
-    /* Performance optimizations for smooth playback */
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
-    backface-visibility: hidden;
     transform: translateZ(0);
-    will-change: transform;
-    /* GPU acceleration */
-    -webkit-transform: translateZ(0);
-    -moz-transform: translateZ(0);
-    -ms-transform: translateZ(0);
-    -o-transform: translateZ(0);
-    /* Smooth video rendering */
-    -webkit-backface-visibility: hidden;
-    -moz-backface-visibility: hidden;
-    -ms-backface-visibility: hidden;
+    backface-visibility: hidden;
 }
 
 /* Hide iOS Safari default play button overlay – videos autoplay/loop without controls */
@@ -549,11 +359,11 @@ body::after {
 /* Image support */
 .media-image {
     object-fit: cover;
-    transition: transform 0.5s ease;
+    transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .video-item:hover .media-image {
-    transform: scale(1.05);
+    transform: scale(1.05) translateZ(0);
 }
 
 /* Video Overlays */
@@ -599,49 +409,16 @@ body::after {
     text-transform: uppercase;
 }
 
-/* Loading State - Optimized */
-.video-item::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 30px;
-    height: 30px;
-    border: 2px solid rgba(255, 255, 255, 0.1);
-    border-top-color: var(--text-color);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    z-index: 1;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    will-change: transform;
+/* Loading spinner removed - no buffering icons on videos */
+
+/* Smooth scrolling - respect reduced motion */
+html {
+    scroll-behavior: smooth;
 }
 
-.video-item.loading::before {
-    opacity: 1;
-}
-
-/* Optimize animations */
-@keyframes spin {
-    to {
-        transform: translate(-50%, -50%) rotate(360deg);
-    }
-}
-
-/* Performance optimizations */
-.video-item,
-.video-player,
-.media-image {
-    will-change: transform;
-    backface-visibility: hidden;
-    transform: translateZ(0);
-}
-
-@keyframes spin {
-    to {
-        transform: translate(-50%, -50%) rotate(360deg);
-    }
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .video-item, .media-image { transition: none; }
 }
 
 /* Responsive Design */
@@ -803,7 +580,8 @@ body::after {
     }
 }
 
-/* Smooth Scrolling */
-html {
-    scroll-behavior: smooth;
+/* Content visibility - skip rendering off-screen sections */
+section {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 600px;
 }
