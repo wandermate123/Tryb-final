@@ -11,45 +11,69 @@ class MediaManager {
     }
 
     init() {
+        const mobile = this.isMobile();
+        if (mobile) this.deferVideoSources();
         if ('IntersectionObserver' in window) {
             this.setupIntersectionObserver();
         } else {
-            this.playAllVideos();
+            if (!mobile) this.playAllVideos();
         }
         this.setupVideoListeners();
-        this.setupImageLoading();
+        if (!mobile) this.setupImageLoading();
+    }
+
+    /** On mobile: don't set video src until in view — avoids loading dozens of videos on first paint */
+    deferVideoSources() {
+        this.videos.forEach(video => {
+            const src = video.querySelector('source');
+            if (!src || !src.getAttribute('src')) return;
+            src.setAttribute('data-src', src.getAttribute('src'));
+            src.removeAttribute('src');
+        });
+    }
+
+    /** Set video source when about to play (mobile lazy-load) */
+    ensureVideoSource(video) {
+        const src = video.querySelector('source');
+        if (!src) return;
+        const dataSrc = src.getAttribute('data-src');
+        if (dataSrc && !src.getAttribute('src')) {
+            src.setAttribute('src', dataSrc);
+            src.removeAttribute('data-src');
+            video.load();
+        }
     }
 
     setupIntersectionObserver() {
         const mobile = this.isMobile();
         const observerOptions = {
             root: null,
-            rootMargin: mobile ? '80px' : '300px',
-            threshold: mobile ? [0, 0.25, 0.5, 0.75, 1] : [0, 0.1, 0.5, 1.0]
+            rootMargin: mobile ? '60px' : '400px',
+            threshold: mobile ? [0, 0.5, 1] : [0, 0.1, 0.5, 1]
         };
 
         const observer = new IntersectionObserver((entries) => {
             if (this.rafId) cancelAnimationFrame(this.rafId);
             this.rafId = requestAnimationFrame(() => {
                 entries.forEach(entry => {
-                    const element = entry.target;
-                    const videoItem = element.closest('.video-item');
+                    const el = entry.target;
+                    const videoItem = el.closest('.video-item');
                     const ratio = entry.intersectionRatio;
 
                     if (entry.isIntersecting && ratio > 0.1) {
-                        if (element.tagName === 'VIDEO') {
+                        if (el.tagName === 'VIDEO') {
                             if (mobile) {
-                                if (ratio >= 0.5) this.playVideoMobile(element, videoItem);
-                                else this.pauseVideo(element);
+                                if (ratio >= 0.5) this.playVideoMobile(el, videoItem);
+                                else this.pauseVideo(el);
                             } else {
-                                if (ratio < 0.5) this.preloadVideo(element);
-                                else this.playVideo(element, videoItem);
+                                if (ratio < 0.5) this.preloadVideo(el);
+                                else this.playVideo(el, videoItem);
                             }
-                        } else if (element.tagName === 'IMG') {
-                            this.loadImage(element);
+                        } else if (el.tagName === 'IMG') {
+                            this.loadImage(el);
                         }
-                    } else if (!entry.isIntersecting && element.tagName === 'VIDEO') {
-                        this.pauseVideo(element);
+                    } else if (!entry.isIntersecting && el.tagName === 'VIDEO') {
+                        this.pauseVideo(el);
                     }
                 });
             });
@@ -87,9 +111,8 @@ class MediaManager {
     setupVideoListeners() {
         const mobile = this.isMobile();
         let lastTimeUpdate = 0;
-        const timeUpdateThrottle = mobile ? 250 : 100;
 
-        this.videos.forEach((video, index) => {
+        this.videos.forEach((video) => {
             const videoItem = video.closest('.video-item');
 
             video.autoplay = true;
@@ -103,15 +126,14 @@ class MediaManager {
             video.setAttribute('muted', '');
             video.setAttribute('playsinline', '');
 
-            video.style.transform = 'translateZ(0)';
-            video.preload = mobile ? 'metadata' : 'auto';
-            video.setAttribute('preload', mobile ? 'metadata' : 'auto');
+            video.style.transform = 'translate3d(0,0,0)';
+            video.preload = mobile ? 'none' : 'auto';
+            video.setAttribute('preload', mobile ? 'none' : 'auto');
 
             video.addEventListener('canplay', () => {
                 if (!this.playingVideos.has(video)) video.play().catch(() => {});
             }, { once: true });
 
-            // Smooth loop handling
             video.addEventListener('ended', () => {
                 requestAnimationFrame(() => {
                     video.currentTime = 0;
@@ -119,33 +141,24 @@ class MediaManager {
                 });
             });
 
-            // Throttled timeupdate for better performance
-            video.addEventListener('timeupdate', () => {
-                const now = Date.now();
-                if (now - lastTimeUpdate < timeUpdateThrottle) return;
-                lastTimeUpdate = now;
-
-                // Smooth loop handling - restart slightly before end
-                if (video.duration > 0 && video.currentTime > 0 && 
-                    video.duration - video.currentTime < 0.1) {
-                    requestAnimationFrame(() => {
-                        video.currentTime = 0;
-                    });
-                }
-            });
+            if (!mobile) {
+                video.addEventListener('timeupdate', () => {
+                    const now = Date.now();
+                    if (now - lastTimeUpdate < 100) return;
+                    lastTimeUpdate = now;
+                    if (video.duration > 0 && video.currentTime > 0 && video.duration - video.currentTime < 0.1) {
+                        requestAnimationFrame(() => { video.currentTime = 0; });
+                    }
+                });
+            }
 
             video.addEventListener('error', () => {}, { once: true });
-
-            // Track playing videos
             video.addEventListener('play', () => {
                 this.playingVideos.add(video);
                 video.loop = true;
                 video.muted = true;
             });
-
-            video.addEventListener('pause', () => {
-                this.playingVideos.delete(video);
-            });
+            video.addEventListener('pause', () => this.playingVideos.delete(video));
 
             if (video.readyState >= 3 && !mobile) {
                 requestAnimationFrame(() => video.play().catch(() => {}));
@@ -155,9 +168,12 @@ class MediaManager {
 
     async playVideo(video, videoItem) {
         if (this.playingVideos.has(video) && !video.paused) return;
-        if (this.isMobile() && video.preload !== 'auto') {
+
+        const mobile = this.isMobile();
+        if (mobile) this.ensureVideoSource(video);
+        if (mobile) {
             video.preload = 'auto';
-            video.load();
+            video.setAttribute('preload', 'auto');
         }
 
         try {
@@ -283,20 +299,28 @@ class HeaderScroll {
 
 document.addEventListener('DOMContentLoaded', () => {
     const isMobile = window.matchMedia('(max-width: 768px)').matches;
-    const delay = isMobile ? 300 : 100;
-    const timeout = isMobile ? 800 : 2000;
-    if ('requestIdleCallback' in window) {
-        requestIdleCallback(() => {
-            new MediaManager();
-            new SmoothScroll();
-            new HeaderScroll();
-        }, { timeout });
+    new SmoothScroll();
+    new HeaderScroll();
+
+    function initMedia() {
+        new MediaManager();
+    }
+
+    if (isMobile) {
+        let done = false;
+        const run = () => {
+            if (done) return;
+            done = true;
+            initMedia();
+        };
+        window.addEventListener('scroll', run, { passive: true, once: true });
+        setTimeout(run, 1400);
     } else {
-        setTimeout(() => {
-            new MediaManager();
-            new SmoothScroll();
-            new HeaderScroll();
-        }, delay);
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(() => initMedia(), { timeout: 1500 });
+        } else {
+            setTimeout(initMedia, 100);
+        }
     }
 });
 
