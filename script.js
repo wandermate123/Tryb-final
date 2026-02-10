@@ -6,81 +6,71 @@ class MediaManager {
         this.videoItems = document.querySelectorAll('.video-item');
         this.playingVideos = new Set();
         this.rafId = null;
+        this.isMobile = () => window.matchMedia('(max-width: 768px)').matches;
         this.init();
     }
 
     init() {
-        // Check if Intersection Observer is supported
         if ('IntersectionObserver' in window) {
             this.setupIntersectionObserver();
         } else {
-            // Fallback: play all videos if Intersection Observer is not supported
             this.playAllVideos();
         }
-
-        // Setup video event listeners
         this.setupVideoListeners();
-        
-        // Setup image lazy loading
         this.setupImageLoading();
     }
 
     setupIntersectionObserver() {
-        // Optimized for smooth playback - load videos early but intelligently
+        const mobile = this.isMobile();
         const observerOptions = {
             root: null,
-            rootMargin: '300px', // Start loading 300px before entering viewport
-            threshold: [0, 0.1, 0.5, 1.0] // Multiple thresholds for better control
+            rootMargin: mobile ? '80px' : '300px',
+            threshold: mobile ? [0, 0.25, 0.5, 0.75, 1] : [0, 0.1, 0.5, 1.0]
         };
 
         const observer = new IntersectionObserver((entries) => {
-            // Use requestAnimationFrame for smooth updates
-            if (this.rafId) {
-                cancelAnimationFrame(this.rafId);
-            }
-            
+            if (this.rafId) cancelAnimationFrame(this.rafId);
             this.rafId = requestAnimationFrame(() => {
                 entries.forEach(entry => {
                     const element = entry.target;
                     const videoItem = element.closest('.video-item');
-                    
-                    if (entry.isIntersecting && entry.intersectionRatio > 0.1) {
-                        // Check if it's a video or image
+                    const ratio = entry.intersectionRatio;
+
+                    if (entry.isIntersecting && ratio > 0.1) {
                         if (element.tagName === 'VIDEO') {
-                            // Preload video when approaching viewport
-                            if (entry.intersectionRatio < 0.5) {
-                                this.preloadVideo(element);
+                            if (mobile) {
+                                if (ratio >= 0.5) this.playVideoMobile(element, videoItem);
+                                else this.pauseVideo(element);
                             } else {
-                                // Play when fully visible
-                                this.playVideo(element, videoItem);
+                                if (ratio < 0.5) this.preloadVideo(element);
+                                else this.playVideo(element, videoItem);
                             }
                         } else if (element.tagName === 'IMG') {
                             this.loadImage(element, videoItem);
                         }
-                    } else if (!entry.isIntersecting) {
-                        // Pause video when out of view to save resources
-                        if (element.tagName === 'VIDEO') {
-                            this.pauseVideo(element);
-                        }
+                    } else if (!entry.isIntersecting && element.tagName === 'VIDEO') {
+                        this.pauseVideo(element);
                     }
                 });
             });
         }, observerOptions);
 
-        // Observe all videos and images
-        this.videos.forEach(video => {
-            observer.observe(video);
+        this.videos.forEach(v => observer.observe(v));
+        this.images.forEach(img => observer.observe(img));
+    }
+
+    playVideoMobile(video, videoItem) {
+        this.playingVideos.forEach(v => {
+            if (v !== video && !v.paused) this.pauseVideo(v);
         });
-        this.images.forEach(image => {
-            observer.observe(image);
-        });
+        this.playingVideos.clear();
+        this.playVideo(video, videoItem);
     }
 
     preloadVideo(video) {
-        // Preload video without playing
         if (video.readyState === 0) {
-            video.preload = 'auto';
-            video.load();
+            video.preload = this.isMobile() ? 'metadata' : 'auto';
+            if (!this.isMobile()) video.load();
         }
     }
 
@@ -121,14 +111,13 @@ class MediaManager {
     }
 
     setupVideoListeners() {
-        // Throttle timeupdate for better performance
+        const mobile = this.isMobile();
         let lastTimeUpdate = 0;
-        const timeUpdateThrottle = 100; // Update every 100ms instead of every frame
+        const timeUpdateThrottle = mobile ? 250 : 100;
 
         this.videos.forEach((video, index) => {
             const videoItem = video.closest('.video-item');
 
-            // Force autoplay, loop, and muted attributes for smooth playback
             video.autoplay = true;
             video.loop = true;
             video.muted = true;
@@ -137,14 +126,12 @@ class MediaManager {
             video.setAttribute('loop', 'true');
             video.setAttribute('muted', '');
             video.setAttribute('playsinline', '');
-            
-            // Enable hardware acceleration hints
-            video.style.transform = 'translateZ(0)';
-            video.style.willChange = 'transform';
 
-            // Optimize video loading
-            video.preload = 'auto';
-            video.setAttribute('preload', 'auto');
+            video.style.transform = 'translateZ(0)';
+            if (!mobile) video.style.willChange = 'transform';
+
+            video.preload = mobile ? 'metadata' : 'auto';
+            video.setAttribute('preload', mobile ? 'metadata' : 'auto');
 
             // Remove loading state when video can play
             video.addEventListener('loadeddata', () => {
@@ -204,19 +191,17 @@ class MediaManager {
                 this.playingVideos.delete(video);
             });
 
-            // Try to play immediately if video is already loaded
-            if (video.readyState >= 3) {
-                requestAnimationFrame(() => {
-                    video.play().catch(() => {});
-                });
+            if (video.readyState >= 3 && !mobile) {
+                requestAnimationFrame(() => video.play().catch(() => {}));
             }
         });
     }
 
     async playVideo(video, videoItem) {
-        // Skip if already playing
-        if (this.playingVideos.has(video) && !video.paused) {
-            return;
+        if (this.playingVideos.has(video) && !video.paused) return;
+        if (this.isMobile() && video.preload !== 'auto') {
+            video.preload = 'auto';
+            video.load();
         }
 
         try {
@@ -383,46 +368,42 @@ class HeaderScroll {
     }
 }
 
-// Initialize everything when DOM is ready - Optimized
 document.addEventListener('DOMContentLoaded', () => {
-    // Use requestIdleCallback for non-critical initialization
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    const delay = isMobile ? 300 : 100;
+    const timeout = isMobile ? 800 : 2000;
     if ('requestIdleCallback' in window) {
         requestIdleCallback(() => {
             new MediaManager();
             new SmoothScroll();
             new HeaderScroll();
-        }, { timeout: 2000 });
+        }, { timeout });
     } else {
-        // Fallback for browsers without requestIdleCallback
         setTimeout(() => {
             new MediaManager();
             new SmoothScroll();
             new HeaderScroll();
-        }, 100);
+        }, delay);
     }
 });
 
-// Handle page visibility changes - Optimized
 document.addEventListener('visibilitychange', () => {
     const videos = document.querySelectorAll('.video-player');
     if (document.hidden) {
-        // Pause all videos when tab is hidden to save resources
-        videos.forEach(video => {
-            if (!video.paused) {
-                video.pause();
-            }
-        });
+        videos.forEach(v => { if (!v.paused) v.pause(); });
     } else {
-        // Resume visible videos when tab becomes active
         requestAnimationFrame(() => {
+            const mobile = window.matchMedia('(max-width: 768px)').matches;
+            let played = 0;
             videos.forEach(video => {
                 const videoItem = video.closest('.video-item');
-                if (videoItem) {
-                    const rect = videoItem.getBoundingClientRect();
-                    const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
-                    if (isVisible && video.paused) {
-                        video.play().catch(() => {});
-                    }
+                if (!videoItem) return;
+                const rect = videoItem.getBoundingClientRect();
+                const visible = rect.top < window.innerHeight && rect.bottom > 0;
+                if (visible && video.paused) {
+                    if (mobile && played >= 1) return;
+                    video.play().catch(() => {});
+                    if (mobile) played++;
                 }
             });
         });
